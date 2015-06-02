@@ -706,8 +706,8 @@ PARAMETER_SECTION
 	// ln(Ro)    = theta(2)
 	// ln(R1)    = theta(3)
 	// ln(Rbar)  = theta(4)
-	// ra        = theta(5)
-	// rbeta     = theta(6)
+	// ln(ra)    = theta(5)
+	// ln(rbeta) = theta(6)
 	// logSigmaR = theta(7)
 	// steepness = theta(8)
 	// rho       = theta(9)
@@ -948,8 +948,8 @@ FUNCTION initialize_model_parameters
 	logR0     = theta(2);
 	logRini   = theta(3);
 	logRbar   = theta(4);
-	ra        = theta(5);
-	rbeta     = theta(6);
+	ra        = mfexp(theta(5));
+	rbeta     = mfexp(theta(6));
 	logSigmaR = theta(7);
 	steepness = theta(8);
 	rho       = theta(9);
