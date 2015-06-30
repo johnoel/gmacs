@@ -60,7 +60,7 @@
    1      3    100  120  0    1      1    -1      12.5  12.5  12.5   1975   2014
    2      3    110  130  0    1      1    -2      12.5  12.5  12.5   1975   2014
    3      3     90  110  0    1      1    -3      12.5  12.5  12.5   1975   1981
-   3      3     95  105  0    1      1     4      12.5  12.5  12.5   1982   2014
+   3      3     95  105  0    1      1    -4      12.5  12.5  12.5   1982   2014
    4      3     80   90  0    1      1    -4      12.5  12.5  12.5   1975   2014
 ## ———————————————————————————————————————————————————————————————————————————————————— ##
 ## Retained
@@ -127,6 +127,27 @@
 ## Year position of the knots (vector must be equal to the number of nodes)
    1976 1980 1985 1994
 
+## ———————————————————————————————————————————————————————————————————————————————————— ##
+## TIME VARYING CATCHABILITY                                                            ##
+## ———————————————————————————————————————————————————————————————————————————————————— ##
+## Number of indices with time varying q if 0, 
+# 1
+## gear index with time varying q
+# 3 
+## TYPE:
+##      0 = constant catchability
+##      1 = Random walk (deviates constrained by variance in catchability
+##      2 = Cubic Spline (deviates constrained by nodes & node-placement)
+##      3 = Blocked changes (deviates constrained by variance AT specific knots)
+  1
+## Phase of estimation
+  4
+## STDEV in q_dev for Random walk
+  0.2
+## Number of nodes for cubic spline or number of step-changes for option 3 Irrelevant for rw
+  4
+## Year position of the knots (vector must be equal to the number of nodes)
+   1976 1980 1985 1994
 ## ———————————————————————————————————————————————————————————————————————————————————— ##
 ## OTHER CONTROLS
 ## ———————————————————————————————————————————————————————————————————————————————————— ##

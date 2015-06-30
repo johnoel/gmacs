@@ -660,6 +660,34 @@ DATA_SECTION
 		}
 		WriteCtl(m_type); WriteCtl(Mdev_phz); WriteCtl(m_stdev); WriteCtl(m_nNodes); WriteCtl(m_nodeyear); 
 	END_CALCS
+	// |--------------------------------------------------|
+	// | OPTIONS FOR TIME-VARYING CATCHABILITY            |
+	// |--------------------------------------------------|
+	int nQdev;
+	init_int q_type;
+	init_int Qdev_phz;
+	init_number q_stdev;
+	init_int q_nNodes;
+	init_ivector q_nodeyear(1,q_nNodes);
+	LOC_CALCS
+		switch( q_type )
+		{
+			case 0:
+				nQdev = 0; 
+				Qdev_phz = -1;
+			break;
+			case 1: 
+				nQdev = nSurveyRows(1)-1;  // OjO need to generalize for arbitrary number of surveys
+			break;
+			case 2:
+				nQdev = q_nNodes;
+			break;
+			case 3:
+				nQdev = q_nNodes;
+			break;
+		}
+		WriteCtl(q_type); WriteCtl(Qdev_phz); WriteCtl(q_stdev); WriteCtl(q_nNodes); WriteCtl(q_nodeyear); 
+	END_CALCS
 
 
 	// |---------------------------------------------------------|
@@ -802,12 +830,15 @@ PARAMETER_SECTION
 	// Time-varying natural mortality rate devs.
 	init_bounded_dev_vector m_dev(1,nMdev,-3.0,3.0,Mdev_phz);
 
+	// Time-varying catchability devs.
+	init_bounded_dev_vector q_dev(1,nQdev,-3.0,3.0,Qdev_phz);
+
 	// Effective sample size parameter for multinomial
 	init_number_vector log_vn(1,nSizeComps,nvn_phz);
 
 
 	matrix nloglike(1,nlikes,1,ilike_vector);
-	vector nlogPenalty(1,6);
+	vector nlogPenalty(1,7);
 	vector priorDensity(1,ntheta+nGrwth+nSurveys);
 
 	objective_function_value objfun;
@@ -1277,48 +1308,12 @@ FUNCTION calc_natural_mortality
 	{
 		M(h) = M0;
 	}
-
 	// Add random walk to natural mortality rate.
 	if (active( m_dev ))
 	{
 		dvar_vector delta(syr+1,nyr);
 		delta.initialize();
-
-		switch( m_type )
-		{
-			// would this line ever occur if m_dev active?
-			case 0:  // constant natural mortality
-				delta = 0;
-			break;
-
-			case 1:  // random walk in natural mortality
-				delta = m_dev.shift(syr+1);
-			break;
-
-			case 2:  // cubic splines
-			{
-				dvector iyr = (m_nodeyear -syr) / (nyr-syr);
-				dvector jyr(syr+1,nyr);
-				jyr.fill_seqadd(0,1./(nyr-syr-1));
-				vcubic_spline_function csf(iyr,m_dev);
-				delta = csf(jyr);
-			}
-			break;
-
-			/*
-			JIm Question about below.  I'm not sure if you were intending to
-			have this set up as a random walk, where the shift occurs in a specifc year
-			to a new state.  I think what Jie had  was just a block wiht a different
-			M and it then returns back to the previous state.
-			*/
-			case 3:  // Specific break points
-			        for (int idev=1;idev<=nMdev;idev++)
-			  	{
-  					delta(m_nodeyear(idev)) = m_dev(idev);
-			  	}
-			break;
-
-		}
+		delta = get_delta(m_type,syr+1,nyr,m_dev,m_nodeyear,m_nNodes);
 
 		// Update M by year.
 		for(int h = 1; h <= nsex; h++ )
@@ -1329,6 +1324,54 @@ FUNCTION calc_natural_mortality
 			}
 		}
 	}
+	/**
+	 * @brief Calculate generic time-varying delta
+	 * @details Natural mortality (M) is a 3d array for sex, year and size.
+	 * @return dvar_vector of yr-specific changes
+	 * @author Jim Ianelli
+	 * @issues passes deviation vector as non-constant...ok?
+	 * 
+	 */
+FUNCTION dvar_vector get_delta(const int d_type, const int fy, const int ly,dvar_vector& t_dev,const ivector& _nodeyear,const int nnodes)
+		dvar_vector _delta(fy,ly);
+		_delta.initialize();
+		switch( d_type )
+		{
+			// would this line ever occur if t_dev active?
+			case 0:  // constant natural mortality
+				_delta = 0;
+			break;
+
+			case 1:  // random walk in natural mortality
+				_delta = t_dev.shift(fy);
+			break;
+
+			case 2:  // cubic splines
+			{
+				dvector iyr(1,nnodes);
+				iyr = (_nodeyear -syr) / (nyr-syr);
+				dvector jyr(syr+1,nyr);
+				jyr.fill_seqadd(0,1./(nyr-syr-1));
+				vcubic_spline_function csf(iyr,t_dev);
+				_delta = csf(jyr);
+			}
+			break;
+
+			/*
+			JIm question about below.  I'm not sure if you were intending to
+			have this set up as a random walk, where the shift occurs in a specifc year
+			to a new state.  I think what Jie had  was just a block wiht a different
+			M and it then returns back to the previous state.
+			*/
+			case 3:  // Specific break points
+			  for (int idev=1;idev<=nnodes;idev++)
+			  {
+  					_delta(_nodeyear(idev)) = t_dev(idev);
+			  }
+			break;
+
+		}
+		return(_delta);
 
 
 	/**
@@ -1752,7 +1795,7 @@ FUNCTION calc_predicted_catch
 				switch(type)
 				{
 					case 1:     // retained catch
-						// Question here about what the retained catch is.
+						// question here about what the retained catch is.
 						// Should probably include shell condition here as well.
 						// Now assuming both old and new shell are retained.
 						sel = exp( sel + log_slx_retaind(k)(h)(i) );
@@ -1837,7 +1880,7 @@ FUNCTION calc_predicted_catch
 	 * relative abundance are lognormal.  Currently assumes that the CPUE
 	 * index is made up of both retained and discarded crabs.
 	 * 
-	 * Question regarding use of shell condition in the relative abundance index.
+	 * question regarding use of shell condition in the relative abundance index.
 	 * Currenlty there is no shell condition information in the CPUE data, should
 	 * there be? Similarly, there is no mature immature information, should there be?
 	 * 
@@ -1900,7 +1943,23 @@ FUNCTION calc_relative_abundance
 		dvariable zbar = mean(zt);
 		res_cpue(k)    = zt - zbar;
 		survey_q(k)    = mfexp(zbar);
-		pre_cpue(k)    = survey_q(k) * V;
+	  if (active( q_dev )&& k==1)
+	  {
+	  	dvar_vector delta(2,nSurveyRows(k));
+	  	delta.initialize();
+	  	delta = get_delta(q_type,2,nSurveyRows(k),q_dev,q_nodeyear,q_nNodes);
+	  	dvariable qtmp ;
+	  	qtmp = survey_q(k);
+		  pre_cpue(k,1)    = qtmp * V(1);
+	  	for (i=2;i<=nSurveyRows(1);i++)
+	  	{
+	  	  qtmp *= exp(delta(i));
+		    pre_cpue(k,i)    = qtmp * V(i);
+	  	}
+		  res_cpue(k)    = log(obs_cpue(k)) - log(pre_cpue(k));
+	  }	
+	  else
+		  pre_cpue(k)    = survey_q(k) * V;
 	}
 
 
@@ -2157,9 +2216,9 @@ FUNCTION calculate_prior_densities
 
 	// ---Continue with catchability priors-----------------------
 	int iprior = ntheta + nGrwth + 1; 
-	for (int i=1;i<=nSurveys;i++)
+	for (int k=1;k<=nSurveys;k++)
 	{
-		int itype = int(prior_qtype(i));
+		int itype = int(prior_qtype(k));
 		switch(itype)
 		{
 			// Analytical soln, no prior (uniform, uniformative)
@@ -2167,7 +2226,7 @@ FUNCTION calculate_prior_densities
 			break;
 			// Prior on analytical soln, log-normal
 			case 1:
-				priorDensity(iprior) = dnorm(log(survey_q(i)),log(prior_qbar(i)),prior_qsd(i));
+				priorDensity(iprior) = dnorm(log(survey_q(k)),log(prior_qbar(k)),prior_qsd(k));
 			break;
 		}
 		iprior++;
@@ -2308,17 +2367,18 @@ FUNCTION calc_objective_function
 
 	// 3) Penalty to constrain M in random walk
 	if( active(m_dev) )
-	{
 		nlogPenalty(3) = dnorm(m_dev,m_stdev);
-	}
+		// Need to change gmr table_penalties function
+	if( active(q_dev) )
+		nlogPenalty(4) = dnorm(q_dev,q_stdev);
 
 	// 4 Penalty on recruitment devs.
 	if( active(rec_dev) && nSRR_flag !=0)
-		nlogPenalty(4) = dnorm(rec_dev,1.0);
+		nlogPenalty(5) = dnorm(rec_dev,1.0);
 	if( active(rec_ini) && nSRR_flag !=0)
-		nlogPenalty(5) = dnorm(rec_ini,1.0);
+		nlogPenalty(6) = dnorm(rec_ini,1.0);
 	if( active(rec_dev))
-		nlogPenalty(6) = dnorm(first_difference(rec_dev),1.0);
+		nlogPenalty(7) = dnorm(first_difference(rec_dev),1.0);
 
 	objfun = sum(nloglike) + sum(nlogPenalty) + sum(priorDensity);
 	if( verbose==2 ) 
