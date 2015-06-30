@@ -110,7 +110,6 @@
  0  0  0  0  0  0  0  0  0  0   0   0   0   0   0   0   0   0   # Auto tail compression (pmin)
 -4  -4  -4  -4  -4  -4  -4  -4  -4  -4  -4  -4  -4  -4  -4  -4  -4  -4   # Phz for estimating effective sample size (if appl.)
 ## ———————————————————————————————————————————————————————————————————————————————————— ##
-
 ## ———————————————————————————————————————————————————————————————————————————————————— ##
 ## TIME VARYING NATURAL MORTALIIY RATES                                                 ##
 ## ———————————————————————————————————————————————————————————————————————————————————— ##
@@ -122,6 +121,23 @@
   3
 ## Phase of estimation
   3
+## STDEV in m_dev for Random walk
+  0.60
+## Number of nodes for cubic spline or number of step-changes for option 3
+  2
+## Year position of the knots (vector must be equal to the number of nodes)
+   1980 1985 
+## ———————————————————————————————————————————————————————————————————————————————————— ##
+## TIME VARYING CATCHABILITY                                                            ##
+## ———————————————————————————————————————————————————————————————————————————————————— ##
+## TYPE: 
+##      0 = constant natural mortality
+##      1 = Random walk (deviates constrained by variance in M)
+##      2 = Cubic Spline (deviates constrained by nodes & node-placement)
+##      3 = Blocked changes (deviates constrained by variance AT specific knots)
+  3
+## Phase of estimation
+ -3
 ## STDEV in m_dev for Random walk
   0.60
 ## Number of nodes for cubic spline or number of step-changes for option 3

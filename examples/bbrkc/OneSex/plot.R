@@ -30,11 +30,11 @@ dev.off()
 priors <- table_priors(M)
 write.table(priors, file = paste0(.FIGS, "prior.csv"), sep = ",", row.names = FALSE)
 
-likes <- table_likelihoods(M)
-write.table(likes, file = paste0(.FIGS, "likelihood.csv"), sep = ",", row.names = FALSE)
+#likes <- table_likelihoods(M)
+#write.table(likes, file = paste0(.FIGS, "likelihood.csv"), sep = ",", row.names = FALSE)
 
-pen <- table_penalties(M)
-write.table(pen, file = paste0(.FIGS, "penalties.csv"), sep = ",", row.names = FALSE)
+#pen <- table_penalties(M)
+#write.table(pen, file = paste0(.FIGS, "penalties.csv"), sep = ",", row.names = FALSE)
 
 plot_recruitment_size(M)
 ggsave(paste0(.FIGS, "rec_size.png"), width = ww*2.5, height = hh*1.5)

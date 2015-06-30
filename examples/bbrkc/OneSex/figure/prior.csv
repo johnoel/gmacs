@@ -1,8 +1,8 @@
 "Model","variable","value"
-"OneSex","X1",15.997
+"OneSex","X1",-0.162
 "OneSex","X2",-1.384
-"OneSex","X3",3.33
-"OneSex","X4",3.571
+"OneSex","X3",3.465
+"OneSex","X4",3.68
 "OneSex","X5",0
 "OneSex","X6",0
 "OneSex","X7",0
@@ -15,4 +15,4 @@
 "OneSex","X14",0
 "OneSex","X15",0
 "OneSex","X16",0
-"OneSex","Total",20.939
+"OneSex","Total",5.025

@@ -195,7 +195,7 @@ DATA_SECTION
 	!! WRITEDAT(lw_alfa); WRITEDAT(lw_beta); ECHO(mean_wt);
 
 	// |-------------------------------|
-	// | FECUNDITY FOR MMB CALCULATION |
+	// | FECUNDITY FOR SSB CALCULATION |
 	// |-------------------------------|
 	init_vector fecundity(1,nclass);
 	init_matrix maturity(1,nsex,1,nclass);
@@ -1943,7 +1943,7 @@ FUNCTION calc_relative_abundance
 		dvariable zbar = mean(zt);
 		res_cpue(k)    = zt - zbar;
 		survey_q(k)    = mfexp(zbar);
-	  if (active( q_dev )&& k==1)
+	  if (active( q_dev )&& k==1) // OjO	
 	  {
 	  	dvar_vector delta(2,nSurveyRows(k));
 	  	delta.initialize();
@@ -2154,7 +2154,7 @@ FUNCTION dvariable get_prior_pdf(const int &pType, const dvariable &theta, const
 
 
 	/**
-	 * @brief Calculate prior density functions for leading parameters.
+	 * @brief Calculate prior density functions for le // OjO	ading parameters.
 	 * @details 
 	 *  - case 0 is a uniform density between the lower and upper bounds.
 	 *  - case 1 is a normal density with mean = p1 and sd = p2
@@ -2651,11 +2651,11 @@ REPORT_SECTION
 
 
 	/**
-	 * @brief Calculate mature male biomass (MMB)
+	 * @brief Calculate spawning stock biomass (SSB)
 	 * @details Calculation of the mature male biomass is based on the
 	 * numbers-at-length summed over each shell condition.
 	 * 
-	 * TODO correct for timing of when the MMB is calculated
+	 * TODO correct for timing of when the SSB is calculated
 	 * Add female component if lamnda < 1
 	 * 
 	 * @return dvar_vector ssb (model mature biomass).
