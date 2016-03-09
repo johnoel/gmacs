@@ -1,5 +1,7 @@
 all:
+	$(MAKE) clean
 	$(MAKE) --directory=./src
+	$(MAKE) tests
 
 tests:
 	#$(MAKE) --directory=./examples/demo
@@ -8,5 +10,5 @@ tests:
 	$(MAKE) --directory=./examples/smbkc SAFE=true
 
 clean:
-	$(MAKE) clean --directory=./src
+	$(MAKE) --directory=./src clean
 	$(MAKE) --directory=./examples/smbkc clean
